@@ -81,9 +81,9 @@ module CI
         output.push "#{exception.class.name << ":"}" unless exception.class.name =~ /RSpec/
         output.push @exception.message
 
-        format_metadata = RSpecFormatters::RSpec_2_12_0_bug ? @example.metadata : @example
+        formatter = ::RSpec::Core::BacktraceFormatter.new
 
-        [@formatter.format_backtrace(@exception.backtrace, format_metadata)].flatten.each do |backtrace_info|
+        formatter.format_backtrace(@exception.backtrace).flatten.each do |backtrace_info|
           backtrace_info.lines.each do |line|
             output.push "     #{line}"
           end
@@ -111,7 +111,6 @@ module CI
       end
 
       def example_started(notification)
-        super
         spec = TestCase.new
         @suite.testcases << spec
         spec.start
@@ -127,7 +126,6 @@ module CI
 
       def example_failed(notification, *rest)
         super
-        output.puts notification.example.execution_result
         #
         # In case we fail in before(:all)
         example_started(notification) if @suite.testcases.empty?
